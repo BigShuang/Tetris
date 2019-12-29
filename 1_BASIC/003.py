@@ -80,6 +80,12 @@ canvas.pack()
 draw_blank_board(canvas)
 
 
+block_list = []
+for i in range(R):
+    i_row = ['' for j in range(C)]
+    block_list.append(i_row)
+
+
 def draw_block_move(canvas, block, direction=[0, 0]):
     """
     绘制向指定方向移动后的俄罗斯方块
@@ -137,7 +143,41 @@ def check_move(block, direction=[0, 0]):
             if c < 0 or c >= C or r >= R:
                 return False
 
+            # 必须要判断r不小于0才行，具体原因你可以不加这个判断，试试会出现什么效果
+            if r >= 0 and block_list[r][c]:
+                return False
+
     return True
+
+
+def save_block_to_list(block):
+    shape_type = block['kind']
+    xy = block['xy']
+    cell_list = block['cell_list']
+
+    for cell in cell_list:
+        cell_c, cell_r = cell
+        c = cell_c + xy[0]
+        r = cell_r + xy[1]
+        # block_list 在对应位置记下其类型
+        block_list[r][c] = shape_type
+
+
+def horizontal_move_block(event):
+    """
+    左右水平移动俄罗斯方块
+    """
+    direction = [0, 0]
+    if event.keysym == 'Left':
+        direction = [-1, 0]
+    elif event.keysym == 'Right':
+        direction = [1, 0]
+    else:
+        return
+
+    global current_block
+    if current_block is not None and check_move(current_block, direction):
+        draw_block_move(canvas, current_block, direction)
 
 
 def game_loop():
@@ -152,11 +192,18 @@ def game_loop():
         if check_move(current_block, [0, 1]):
             draw_block_move(canvas, current_block, [0, 1])
         else:
+            # 无法移动，记入 block_list 中
+            save_block_to_list(current_block)
             current_block = None
 
     win.after(FPS, game_loop)
 
+canvas.focus_set() # 聚焦到canvas画板对象上
+canvas.bind("<KeyPress-Left>", horizontal_move_block)
+canvas.bind("<KeyPress-Right>", horizontal_move_block)
+
 current_block = None
+
 
 win.update()
 win.after(FPS, game_loop) # 在FPS 毫秒后调用 game_loop方法
