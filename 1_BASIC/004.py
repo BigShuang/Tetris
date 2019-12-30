@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 import random
 
 cell_size = 30
@@ -48,10 +49,14 @@ def draw_cell_by_cr(canvas, c, r, color="#CCCCCC"):
 
 
 # 绘制空白面板
-def draw_blank_board(canvas):
+def draw_board(canvas, block_list):
     for ri in range(R):
         for ci in range(C):
-            draw_cell_by_cr(canvas, ci, ri)
+            cell_type = block_list[ri][ci]
+            if cell_type:
+                draw_cell_by_cr(canvas, ci, ri, SHAPESCOLOR[cell_type])
+            else:
+                draw_cell_by_cr(canvas, ci, ri)
 
 
 def draw_cells(canvas, c, r, cell_list, color="#CCCCCC"):
@@ -77,12 +82,12 @@ win = tk.Tk()
 canvas = tk.Canvas(win, width=width, height=height, )
 canvas.pack()
 
-draw_blank_board(canvas)
-
 block_list = []
 for i in range(R):
     i_row = ['' for j in range(C)]
     block_list.append(i_row)
+
+draw_board(canvas, block_list)
 
 
 def draw_block_move(canvas, block, direction=[0, 0]):
@@ -147,6 +152,38 @@ def check_move(block, direction=[0, 0]):
             return False
 
     return True
+
+
+def check_row_complete(row):
+    for cell in row:
+        if cell=='':
+            return False
+
+    return True
+
+
+score = 0
+win.title("SCORES: %s" % score) # 标题中展示分数
+
+
+def check_and_clear():
+    has_complete_row =False
+    for ri in range(len(block_list)):
+        if check_row_complete(block_list[ri]):
+            has_complete_row = True
+            # 当前行可消除
+            if ri > 0:
+                for cur_ri in range(ri, 0, -1):
+                    block_list[cur_ri] = block_list[cur_ri-1][:]
+            else:
+                block_list[ri] = ['' for j in range(C)]
+            global score
+            score += 10
+
+    if has_complete_row:
+        draw_board(canvas, block_list)
+
+        win.title("SCORES: %s" % score)
 
 
 def save_block_to_list(block):
@@ -215,7 +252,7 @@ def land(event):
     for cell in cell_list:
         cell_c, cell_r = cell
         c, r = cell_c + cc, cell_r + cr
-        if block_list[r][c]:
+        if r>=0 and block_list[r][c]:
             return
         h = 0
         for ri in range(r+1, R):
@@ -239,6 +276,10 @@ def game_loop():
         # 新生成的俄罗斯方块需要先在生成位置绘制出来
         draw_block_move(canvas, new_block)
         current_block = new_block
+        if not check_move(current_block, [0, 0]):
+            messagebox.showinfo("Game Over!", "Your Score is %s" % score)
+            win.destroy()
+            return
     else:
         if check_move(current_block, [0, 1]):
             draw_block_move(canvas, current_block, [0, 1])
@@ -246,6 +287,8 @@ def game_loop():
             # 无法移动，记入 block_list 中
             save_block_to_list(current_block)
             current_block = None
+
+    check_and_clear()
 
     win.after(FPS, game_loop)
 

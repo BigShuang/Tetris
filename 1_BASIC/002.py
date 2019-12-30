@@ -88,16 +88,18 @@ def draw_block_move(canvas, block, direction=[0, 0]):
     :return:
     """
     shape_type = block['kind']
-    x, y = block['xy']
+    c, r = block['cr']
     cell_list = block['cell_list']
 
     # 移动前，先清除原有位置绘制的俄罗斯方块,也就是用背景色绘制原有的俄罗斯方块
-    draw_cells(canvas, x, y, cell_list)
+    draw_cells(canvas, c, r, cell_list)
 
-    dx, dy = direction
-    block['xy'] = [x+dx, y+dy]
+    dc, dr = direction
+    new_c, new_r = c+dc, r+dr
+    block['cr'] = [new_c, new_r]
     # 在新位置绘制新的俄罗斯方块就好
-    draw_cells(canvas, x+dx, y+dy, cell_list, SHAPESCOLOR[shape_type])
+    draw_cells(canvas, new_c, new_r, cell_list, SHAPESCOLOR[shape_type])
+
 
 a_block = {
     'kind': 'O',  # 对应俄罗斯方块的类型
