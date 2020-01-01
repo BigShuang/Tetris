@@ -104,7 +104,7 @@ def draw_block_move(canvas, block, direction=[0, 0]):
 a_block = {
     'kind': 'O',  # 对应俄罗斯方块的类型
     'cell_list': SHAPES['O'],  # 对应俄罗斯方块的各个方格
-    'xy': [3, 3]  # 对应横纵坐标，以左上角为原点，水平向右为x轴正方向，竖直向下为y轴正方向，x对应横坐标，y对应纵坐标
+    'cr': [3, 3]  # 对应横纵坐标，以左上角为原点，水平向右为横坐标轴正方向，竖直向下为纵坐标轴正方向
 }
 
 draw_block_move(canvas, a_block)
@@ -119,7 +119,7 @@ def game_loop():
     win.after(FPS, game_loop)
 
 win.update()
-win.after(FPS, game_loop) # 在FPS 毫秒后调用 game_loop方法
+win.after(FPS, game_loop)  # 在FPS 毫秒后调用 game_loop方法
 
 
 win.mainloop()
