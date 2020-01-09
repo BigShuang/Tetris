@@ -167,7 +167,7 @@ win.title("SCORES: %s" % score) # 标题中展示分数
 
 
 def check_and_clear():
-    has_complete_row =False
+    has_complete_row = False
     for ri in range(len(block_list)):
         if check_row_complete(block_list[ri]):
             has_complete_row = True
@@ -175,6 +175,7 @@ def check_and_clear():
             if ri > 0:
                 for cur_ri in range(ri, 0, -1):
                     block_list[cur_ri] = block_list[cur_ri-1][:]
+                block_list[0] = ['' for j in range(C)]
             else:
                 block_list[ri] = ['' for j in range(C)]
             global score
