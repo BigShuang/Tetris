@@ -10,5 +10,7 @@
 ## 3 AI自动玩俄罗斯方块
 对应文件夹：3_AI
 运行效果见本人b站投稿[av82337073](https://www.bilibili.com/video/av82337073)
+
 其中multi_tetris.py对应宽屏多个
+
 tetris_by_class.py对应单个竖屏
