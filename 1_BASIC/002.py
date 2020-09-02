@@ -123,6 +123,3 @@ win.after(FPS, game_loop)  # 在FPS 毫秒后调用 game_loop方法
 
 
 win.mainloop()
-
-
-
