@@ -288,8 +288,7 @@ def game_loop():
             # 无法移动，记入 block_list 中
             save_block_to_list(current_block)
             current_block = None
-
-    check_and_clear()
+            check_and_clear()
 
     win.after(FPS, game_loop)
 
