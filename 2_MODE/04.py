@@ -191,6 +191,8 @@ def check_and_clear():
 
         win.title("SCORES: %s" % score)
 
+    return has_complete_row
+
 
 def save_block_to_list(block):
     shape_type = block['kind']
@@ -312,16 +314,17 @@ def game_loop():
                 save_block_to_list(current_block)
                 show_block_list()
                 has_hiden = False
-            else:
+            elif not check_and_clear():
                 hide_block_list()
                 current_block = None
                 has_hiden = True
 
-    check_and_clear()
+    if not has_hiden:
+        win.after(2 * FPS, game_loop)
+    else:
+        win.after(FPS, game_loop)
 
-    win.after(FPS, game_loop)
-
-canvas.focus_set() # 聚焦到canvas画板对象上
+canvas.focus_set()  # 聚焦到canvas画板对象上
 canvas.bind("<KeyPress-Left>", horizontal_move_block)
 canvas.bind("<KeyPress-Right>", horizontal_move_block)
 canvas.bind("<KeyPress-Up>", rotate_block)
@@ -332,7 +335,7 @@ current_block = None
 
 
 win.update()
-win.after(FPS, game_loop) # 在FPS 毫秒后调用 game_loop方法
+win.after(FPS, game_loop)  # 在FPS 毫秒后调用 game_loop方法
 
 
 win.mainloop()
