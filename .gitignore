@@ -2,3 +2,7 @@
 /shelf/
 /workspace.xml
 /Files/
+.idea/
+
+temp.py
+*demo*.py
