@@ -1,3 +1,7 @@
+# usr/bin/env python
+# -*- coding:utf-8- -*-
+# float mode (浮动模式)
+
 import tkinter as tk
 from tkinter import messagebox
 import random
@@ -10,6 +14,7 @@ width = C * cell_size
 
 FPS = 200  # 刷新页面的毫秒间隔
 
+
 # 定义各种形状
 SHAPES = {
     "O": [(-1, -1), (0, -1), (-1, 0), (0, 0)],
@@ -20,6 +25,7 @@ SHAPES = {
     "J": [(-1, 0), (0, 0), (0, -1), (0, -2)],
     "Z": [(-1, -1), (0, -1), (0, 0), (1, 0)],
 }
+
 
 # 定义各种形状的颜色
 SHAPESCOLOR = {
@@ -33,7 +39,7 @@ SHAPESCOLOR = {
 }
 
 
-def draw_cell_by_cr(canvas, c, r, color="#CCCCCC"):
+def draw_cell_by_cr(canvas, c, r, color="#CCCCCC", tag_kind=""):
     """
     :param canvas: 画板，用于绘制一个方块的Canvas对象
     :param c: 方块所在列
@@ -45,18 +51,26 @@ def draw_cell_by_cr(canvas, c, r, color="#CCCCCC"):
     y0 = r * cell_size
     x1 = c * cell_size + cell_size
     y1 = r * cell_size + cell_size
-    canvas.create_rectangle(x0, y0, x1, y1,
-                            fill=color, outline="white", width=2)
+    if tag_kind == "falling":
+        canvas.create_rectangle(x0, y0, x1, y1, fill=color,outline="white", width=2, tag=tag_kind)
+    elif tag_kind == "row":
+        canvas.create_rectangle(x0, y0, x1, y1, fill=color, outline="white", width=2, tag="row-%s" % r)
+    else:
+        canvas.create_rectangle(x0, y0, x1, y1, fill=color, outline="white", width=2)
 
 
-# 绘制面板
-def draw_board(canvas, block_list):
+# 绘制面板, 只有在第一次绘制时才绘制背景色方块
+def draw_board(canvas, block_list, isFirst=False):
+    # 删掉原来所有的行
+    for ri in range(R):
+        canvas.delete("row-%s" % ri)
+
     for ri in range(R):
         for ci in range(C):
             cell_type = block_list[ri][ci]
             if cell_type:
-                draw_cell_by_cr(canvas, ci, ri, SHAPESCOLOR[cell_type])
-            else:
+                draw_cell_by_cr(canvas, ci, ri, SHAPESCOLOR[cell_type], tag_kind="row")
+            elif isFirst:
                 draw_cell_by_cr(canvas, ci, ri)
 
 
@@ -76,7 +90,7 @@ def draw_cells(canvas, c, r, cell_list, color="#CCCCCC"):
         ri = cell_r + r
         # 判断该位置方格在画板内部(画板外部的方格不再绘制)
         if 0 <= c < C and 0 <= r < R:
-            draw_cell_by_cr(canvas, ci, ri, color)
+            draw_cell_by_cr(canvas, ci, ri, color, tag_kind="falling")
 
 
 win = tk.Tk()
@@ -88,7 +102,7 @@ for i in range(R):
     i_row = ['' for j in range(C)]
     block_list.append(i_row)
 
-draw_board(canvas, block_list)
+draw_board(canvas, block_list, True)
 
 
 def draw_block_move(canvas, block, direction=[0, 0]):
@@ -103,8 +117,8 @@ def draw_block_move(canvas, block, direction=[0, 0]):
     c, r = block['cr']
     cell_list = block['cell_list']
 
-    # 移动前，先清除原有位置绘制的俄罗斯方块,也就是用背景色绘制原有的俄罗斯方块
-    draw_cells(canvas, c, r, cell_list)
+    # 移动前，清除原有位置绘制的俄罗斯方块
+    canvas.delete("falling")
 
     dc, dr = direction
     new_c, new_r = c+dc, r+dr
@@ -189,6 +203,9 @@ def check_and_clear():
 
 
 def save_block_to_list(block):
+    # 清除原有的打上了 falling 标签的方块
+    canvas.delete("falling")
+
     shape_type = block['kind']
     cc, cr = block['cr']
     cell_list = block['cell_list']
@@ -197,8 +214,10 @@ def save_block_to_list(block):
         cell_c, cell_r = cell
         c = cell_c + cc
         r = cell_r + cr
-        # block_list 在对应位置记下其类型draw_cells
+        # block_list 在对应位置记下其类型
         block_list[r][c] = shape_type
+
+        draw_cell_by_cr(canvas, c, r, SHAPESCOLOR[shape_type], tag_kind="row")
 
 
 def horizontal_move_block(event):
@@ -270,10 +289,20 @@ def land(event):
         draw_block_move(canvas, current_block, down)
 
 
+def left_float():
+    for row in block_list:
+        first = row.pop(0)
+        row.append(first)
+
+
 def game_loop():
     win.update()
-    global current_block
-    if current_block is None:
+    global current_block, to_float
+    if to_float:
+        left_float()
+        draw_board(canvas, block_list)
+        to_float = False
+    elif current_block is None:
         new_block = generate_new_block()
         # 新生成的俄罗斯方块需要先在生成位置绘制出来
         draw_block_move(canvas, new_block)
@@ -290,10 +319,12 @@ def game_loop():
             save_block_to_list(current_block)
             current_block = None
             check_and_clear()
+            to_float = True
 
     win.after(FPS, game_loop)
 
-canvas.focus_set() # 聚焦到canvas画板对象上
+
+canvas.focus_set()  # 聚焦到canvas画板对象上
 canvas.bind("<KeyPress-Left>", horizontal_move_block)
 canvas.bind("<KeyPress-Right>", horizontal_move_block)
 canvas.bind("<KeyPress-Up>", rotate_block)
@@ -301,7 +332,7 @@ canvas.bind("<KeyPress-Down>", land)
 
 
 current_block = None
-
+to_float = False
 
 win.update()
 win.after(FPS, game_loop) # 在FPS 毫秒后调用 game_loop方法
