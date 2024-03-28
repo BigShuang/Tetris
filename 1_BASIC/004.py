@@ -75,7 +75,7 @@ def draw_cells(canvas, c, r, cell_list, color="#CCCCCC"):
         ci = cell_c + c
         ri = cell_r + r
         # 判断该位置方格在画板内部(画板外部的方格不再绘制)
-        if 0 <= c < C and 0 <= r < R:
+        if 0 <= ci < C and 0 <= ri < R:
             draw_cell_by_cr(canvas, ci, ri, color)
 
 
